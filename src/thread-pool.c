@@ -122,11 +122,14 @@ thread_pool_stop (struct thread_pool *pool)
 {
   pthread_mutex_lock (&pool->mutex);
 
-  if (!pool->stop)
+  if (pool->stop)
     {
-      pool->stop = 1;
-      pthread_cond_broadcast (&pool->cond);
+      pthread_mutex_unlock (&pool->mutex);
+      return;
     }
+
+  pool->stop = 1;
+  pthread_cond_broadcast (&pool->cond);
 
   pthread_mutex_unlock (&pool->mutex);
 
